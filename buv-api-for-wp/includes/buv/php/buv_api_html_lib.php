@@ -3,9 +3,11 @@
  * Classes that return HTML Code from BUV Classes like SuhvClub or SuhvTeam
  * 
  * @author Thomas Hardegger 
- * @version  02.09.2017
+ * @version  05.09.2018
  * @todo Auf neue API umschreiben / die Funktionen bebehalten
  * STATUS: Change
+ * 06.07.2018	kein Loop wenn keine in dieser Saison noch keine Runden definiert.
+ * 05.09.2018 undef count() groups
  */
 
 
@@ -91,7 +93,7 @@ private static function isMemberOfTeams($season, $league, $round, $team) {
     // results = Spiel-Resultate
     $debug = FALSE;
     $trans_Factor = 1;
-    $transient = $league."buv_getGames".$season.$round.$team.$mode;
+    $transient = "buv-api-".$league."buv_getGames".$season.$round.$team.$mode;
     $value = get_transient( $transient );
     $title_head = "";
     $next_game_weekend = "";
@@ -210,140 +212,142 @@ private static function isMemberOfTeams($season, $league, $round, $team) {
       }
 
       $i = 0;
-      do {
-        $groupdata = $details->groups[$i]; 
-        $round = $groupdata->rounds;
- 
-        $groupname = str_replace(" ","_",$groupdata->groupname);
-        $html .=  "<a name=\"".$groupname."\"></a>"."<h2 class=\"suhv-title\">".$title_head.$groupdata->groupname."</h2>";
-        $groupfound = FALSE;
-
-        $r = 0;
-        $rounds = count($round);
-
+      if (isset($groupdata->rounds)) {
         do {
-            $html_title = "";
-            $html_head = "";
-            $html_body = "";
-            $found = FALSE;
-            $roundname = $round[$r]->roundname;
-            $rounddate = $round[$r]->rounddate;
-            $roundplace = $round[$r]->roundplace;
-            $roundinfo = $round[$r]->roundinfo;
-            $roundcity = $round[$r]->roundcity;
-            $mapY = $round[$r]->mapY;
-            $mapX = $round[$r]->mapX;
+          $groupdata = $details->groups[$i]; 
+          $round = $groupdata->rounds;
+   
+          $groupname = str_replace(" ","_",$groupdata->groupname);
+          $html .=  "<a name=\"".$groupname."\"></a>"."<h2 class=\"suhv-title\">".$title_head.$groupdata->groupname."</h2>";
+          $groupfound = FALSE;
 
-            $date_parts = explode(".", $rounddate); // dd.mm.yyyy in german
-            $date_of_game = strtotime($date_parts[2]."-".$date_parts[1]."-".$date_parts[0]);
-            if (($next or $results) and $debug) { echo $rounddate," date ".$date_of_game." start ".$start_date." end ".$end_date."<br>";}
-            $locationlink = "<a href=\"https://maps.google.ch/maps?q=".$mapY .",".$mapX."\""." target=\"_blank\" title= \"".$roundcity."\">";
+          $r = 0;
+          $rounds = count($round);
 
-            //$html .= "<h3>".$roundname." - ".$rounddate." - ".$locationlink.$roundplace."</a></h3>";
-            $html_title .= "<h3>".$roundname." - ".$rounddate." - ".$locationlink.$roundplace."</a></h3>";
+          do {
+              $html_title = "";
+              $html_head = "";
+              $html_body = "";
+              $found = FALSE;
+              $roundname = $round[$r]->roundname;
+              $rounddate = $round[$r]->rounddate;
+              $roundplace = $round[$r]->roundplace;
+              $roundinfo = $round[$r]->roundinfo;
+              $roundcity = $round[$r]->roundcity;
+              $mapY = $round[$r]->mapY;
+              $mapX = $round[$r]->mapX;
 
-            $game_date = $rounddate;
-            $game = $round[$r]->games;
-            $g = 0;
-            $games = count($game);
-            $alt = 0;
+              $date_parts = explode(".", $rounddate); // dd.mm.yyyy in german
+              $date_of_game = strtotime($date_parts[2]."-".$date_parts[1]."-".$date_parts[0]);
+              if (($next or $results) and $debug) { echo $rounddate," date ".$date_of_game." start ".$start_date." end ".$end_date."<br>";}
+              $locationlink = "<a href=\"https://maps.google.ch/maps?q=".$mapY .",".$mapX."\""." target=\"_blank\" title= \"".$roundcity."\">";
+
+              //$html .= "<h3>".$roundname." - ".$rounddate." - ".$locationlink.$roundplace."</a></h3>";
+              $html_title .= "<h3>".$roundname." - ".$rounddate." - ".$locationlink.$roundplace."</a></h3>";
+
+              $game_date = $rounddate;
+              $game = $round[$r]->games;
+              $g = 0;
+              $games = count($game);
+              $alt = 0;
 
 
-            $dateClass = "suhv-date";
-            $homeClass = "suhv-place";
+              $dateClass = "suhv-date";
+              $homeClass = "suhv-place";
 
-            $html_head = "<table class=\"suhv-table suhv-planned-games-full\">\n";
-            $html_head .= "<thead><tr><th class=\"suhv-date\">"."Zeit".
-              "</th><th class=\"suhv-opponent\">".$header_Home.
-              "</th><th class=\"suhv-opponent\">".$header_Guest."</th>";
-            $html_head .="<th class=\"suhv-result\">".$header_Result."</th></thead><tbody>";
+              $html_head = "<table class=\"suhv-table suhv-planned-games-full\">\n";
+              $html_head .= "<thead><tr><th class=\"suhv-date\">"."Zeit".
+                "</th><th class=\"suhv-opponent\">".$header_Home.
+                "</th><th class=\"suhv-opponent\">".$header_Guest."</th>";
+              $html_head .="<th class=\"suhv-result\">".$header_Result."</th></thead><tbody>";
 
-            do {
-              $game_time = $game[$g]->gamestart;
-              $game_homeclub = $game[$g]->home;
-              $game_homeid = $game[$g]->homeid;
-              $game_guestclub = $game[$g]->guest;
-              $game_guestid = $game[$g]->guestid;
-              $game_result = $game[$g]->result;
-              $game_result_add = "";
+              do {
+                $game_time = $game[$g]->gamestart;
+                $game_homeclub = $game[$g]->home;
+                $game_homeid = $game[$g]->homeid;
+                $game_guestclub = $game[$g]->guest;
+                $game_guestid = $game[$g]->guestid;
+                $game_result = $game[$g]->result;
+                $game_result_add = "";
 
-              $game_homeDisplay = $game_homeclub;
-              $game_guestDisplay = $game_guestclub;
+                $game_homeDisplay = $game_homeclub;
+                $game_guestDisplay = $game_guestclub;
 
-              $game_home_result = substr($game_result,0,stripos($game_result,":"));
-              $game_guest_result = substr($game_result,stripos($game_result,":")+1,strlen($game_result));
-              if (stripos($game_result,"/")>0){$game_home_result = 0; $game_guest_result = 0;}
+                $game_home_result = substr($game_result,0,stripos($game_result,":"));
+                $game_guest_result = substr($game_result,stripos($game_result,":")+1,strlen($game_result));
+                if (stripos($game_result,"/")>0){$game_home_result = 0; $game_guest_result = 0;}
 
-              $site_url = get_site_url();
-              $site_display = substr($site_url,stripos($site_url,"://")+3);
+                $site_url = get_site_url();
+                $site_display = substr($site_url,stripos($site_url,"://")+3);
 
-              $resultClass = 'suhv-result';
-              
-              if (in_array($game_homeid,$teamIDs)) { 
-                $game_homeDisplay = $game_homeDisplay; 
-                $resultHomeClass = 'suhv-home';
-                if ($game_home_result > $game_guest_result) { $resultClass = 'suhv-win';} else {$resultClass = 'suhv-lose';}
-              }
-              else $resultHomeClass = 'suhv-guest';
-              if (in_array($game_guestid,$teamIDs)) {
-                $game_guestDisplay =   $game_guestDisplay;
-               $resultGuestClass = 'suhv-home';
-               if ($game_guest_result > $game_home_result) { $resultClass = 'suhv-win';} else {$resultClass = 'suhv-lose';}
-              }
-              else $resultGuestClass = 'suhv-guest';
-              if ($game_result == "")  { 
                 $resultClass = 'suhv-result';
-                $items++;
-              }
-              if ($game_home_result == $game_guest_result) { $resultClass = 'suhv-draw';} 
-              
-              if (((in_array($game_homeid,$teamIDs) or in_array( $game_guestid,$teamIDs)) and $filter) or
-                  ((in_array($game_homeid,$teamIDs) or in_array( $game_guestid,$teamIDs)) and ($date_of_game >= $start_date) and $next) or
-                  ((in_array($game_homeid,$teamIDs) or in_array( $game_guestid,$teamIDs)) and ($date_of_game <= $end_date) and $results) or
-                  (((in_array($game_homeid,$teamIDs) or in_array( $game_guestid,$teamIDs)) and ($date_of_game >= $start_date) and $weekend) and
-                   ((in_array($game_homeid,$teamIDs) or in_array( $game_guestid,$teamIDs)) and ($date_of_game <= $end_date) and $weekend)) or
-                 ($full)) {
-
-                $html_body .= "<tr". ($alt % 2 == 1 ? ' class="alt"' : '') . "><td class=\"".$dateClass."\">".$game_time.
-                "</td><td class=\"".$resultHomeClass."\">".$game_homeDisplay.
-                "</td><td class=\"".$resultGuestClass."\">".$game_guestDisplay; 
-                $html_body .= "</td><td class=\"".$resultClass."\">".$game_result."<br>".$game_result_add."</td>";
-                $html_body .= "</tr>";
-                $alt++;
-                $found = TRUE;  $groupfound = TRUE;
-              }
-              else {
-                //if (($league_str == 'e_kids') and ($date_of_game > $start_date)) echo "not found ".$html_title,"<br>";
-                if (($next_game_weekend == "") and (($date_of_game > $start_date) and $weekend)) {
-                  $next_game_weekend = "<p>Nächste Spiele am ".$rounddate."</p>";
+                
+                if (in_array($game_homeid,$teamIDs)) { 
+                  $game_homeDisplay = $game_homeDisplay; 
+                  $resultHomeClass = 'suhv-home';
+                  if ($game_home_result > $game_guest_result) { $resultClass = 'suhv-win';} else {$resultClass = 'suhv-lose';}
                 }
+                else $resultHomeClass = 'suhv-guest';
+                if (in_array($game_guestid,$teamIDs)) {
+                  $game_guestDisplay =   $game_guestDisplay;
+                 $resultGuestClass = 'suhv-home';
+                 if ($game_guest_result > $game_home_result) { $resultClass = 'suhv-win';} else {$resultClass = 'suhv-lose';}
+                }
+                else $resultGuestClass = 'suhv-guest';
+                if ($game_result == "")  { 
+                  $resultClass = 'suhv-result';
+                  $items++;
+                }
+                if ($game_home_result == $game_guest_result) { $resultClass = 'suhv-draw';} 
+                
+                if (((in_array($game_homeid,$teamIDs) or in_array( $game_guestid,$teamIDs)) and $filter) or
+                    ((in_array($game_homeid,$teamIDs) or in_array( $game_guestid,$teamIDs)) and ($date_of_game >= $start_date) and $next) or
+                    ((in_array($game_homeid,$teamIDs) or in_array( $game_guestid,$teamIDs)) and ($date_of_game <= $end_date) and $results) or
+                    (((in_array($game_homeid,$teamIDs) or in_array( $game_guestid,$teamIDs)) and ($date_of_game >= $start_date) and $weekend) and
+                     ((in_array($game_homeid,$teamIDs) or in_array( $game_guestid,$teamIDs)) and ($date_of_game <= $end_date) and $weekend)) or
+                   ($full)) {
+
+                  $html_body .= "<tr". ($alt % 2 == 1 ? ' class="alt"' : '') . "><td class=\"".$dateClass."\">".$game_time.
+                  "</td><td class=\"".$resultHomeClass."\">".$game_homeDisplay.
+                  "</td><td class=\"".$resultGuestClass."\">".$game_guestDisplay; 
+                  $html_body .= "</td><td class=\"".$resultClass."\">".$game_result."<br>".$game_result_add."</td>";
+                  $html_body .= "</tr>";
+                  $alt++;
+                  $found = TRUE;  $groupfound = TRUE;
+                }
+                else {
+                  //if (($league_str == 'e_kids') and ($date_of_game > $start_date)) echo "not found ".$html_title,"<br>";
+                  if (($next_game_weekend == "") and (($date_of_game > $start_date) and $weekend)) {
+                    $next_game_weekend = "<p>Nächste Spiele am ".$rounddate."</p>";
+                  }
+                }
+                $g++; 
+              } while (($g < $games));
+
+              $html_body .= "</tbody></table><br>";
+              if ($found) {
+              //$html .= "<br />found<br />";
+                $html .= $html_title;
+                $html .= $html_head;
+                $html .= $html_body;
               }
-              $g++; 
-            } while (($g < $games));
-
-            $html_body .= "</tbody></table><br>";
-            if ($found) {
-            //$html .= "<br />found<br />";
-              $html .= $html_title;
-              $html .= $html_head;
-              $html .= $html_body;
-            }
-            $r++; 
-        } while (($r < $rounds));
-        
-        if (!($groupfound)) 
-          if ($weekend) {
-           $html .= "<p>keine Spiele für die Teams des Clubs am Wochenende ".date("d.m.Y",$start_date)." - ".date("d.m.Y",$end_date)."&nbsp;->&nbsp;"; 
-           if  ($league == "D") {
-            $html .= "<a href=\"https://www.buv.ch/junioren-d/\">Link BUV D-Junioren</a></p>".$next_game_weekend; }
-           else {
-            $html .= "<a href=\"https://www.buv.ch/e-kids-turniere/\">Link BUV E-Kids</a></p>"; }
-          } 
-          else { $html .= "<p>keine Spiele vorhanden.</p>";}
-        
-        $i++;
-      } while (($i < $entries));
-
+              $r++; 
+          } while (($r < $rounds));
+          
+          if (!($groupfound)) 
+            if ($weekend) {
+             $html .= "<p>keine Spiele für die Teams des Clubs am Wochenende ".date("d.m.Y",$start_date)." - ".date("d.m.Y",$end_date)."&nbsp;->&nbsp;"; 
+             if  ($league == "D") {
+              $html .= "<a href=\"https://www.buv.ch/junioren-d/\">Link BUV D-Junioren</a></p>".$next_game_weekend; }
+             else {
+              $html .= "<a href=\"https://www.buv.ch/e-kids-turniere/\">Link BUV E-Kids</a></p>"; }
+            } 
+            else { $html .= "<p>keine Spiele vorhanden.</p>";}
+          
+          $i++;
+        } while (($i < $entries));
+      }
+      else { $html .= "<p>Liga: ".$league." noch keine Spiele zur aktuellen Saison bestimmt.</p>";}
       $stop =  time();
       $secs = ($stop- $go);
       Buendnerunihockey_Api_Public::log_me("buv_getGames eval-time: ".$secs." secs");
@@ -366,7 +370,7 @@ private static function isMemberOfTeams($season, $league, $round, $team) {
     //$season = "saison2015_2016";
     //echo $season."<br>";
 
-    $transient = $league.$round."getTeamTable".$season;
+    $transient = "buv-api-".$league.$round."getTeamTable".$season;
     $value = get_transient( $transient );
     $trans_Factor = 5;
 
@@ -435,7 +439,8 @@ private static function isMemberOfTeams($season, $league, $round, $team) {
             } else {$view_cache ="";
       }
 
-      $groupcount = count($details->groups);
+      $groupcount = 0;
+      if (isset($details->groups)) $groupcount = count($details->groups);
 
       $html .=  "<a name=\"".$tabletype."\"></a>"."<h2  class=\"suhv-title\">".$tabletype." - ".$roundtitle."</h2>";
 
