@@ -7,7 +7,7 @@
  * 
  */
 class Buendnerunihockey_Public {
-     public function __construct($base_url='http://www.buv.ch/jsondata', 
+     public function __construct($base_url='https://www.buv.ch/jsondata', 
         $key=null, $secret=null)
     {
         $this->base_url = $base_url; 

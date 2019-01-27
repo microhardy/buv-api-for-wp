@@ -24,13 +24,14 @@
       //echo "get inc:".get_include_path();
 
       require('BusinessServer/bootstrap.php');
-      $api = new Buendnerunihockey_Public();
-      $version_info = $api->version();
-      echo "API-Version: " .$version_info. "<br>";  
 
-      ////saison2016_2017_junioren_d_1_teams.json
+      $api = new Buendnerunihockey_Public();
+      $details = $api->JSON_List(); 
+      $version_info = $details->version;
+      $activ_season = $details->season;
+      echo "API-Version: " .$version_info. "<br>";   
  
-      $details = $api->leagueTeams('saison2016_2017','junioren_d','1','teams'); 
+      $details = $api->leagueTeams($activ_season,'junioren_d','1','teams'); 
       //echo print_r($details)."<br>";
     
       $entriesCount = count($details);

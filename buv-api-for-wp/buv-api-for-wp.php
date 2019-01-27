@@ -3,17 +3,17 @@
  * Admin Page for BUV API-1
  * 
  * @author Thomas Hardegger
- * @version 05.09.2018
+ * @version 02.12.2018
  * STATUS: Reviewed
 */
 /*
 Plugin Name: BUV API-1 Schnittstelle für WordPress
 Plugin URI: http://www.buv.ch/verband/web-support/
 Description: erlaubt die Datenabfrage der BUV Spiele E-Kids und Junioren-D
-Version: 1.23
+Version: 1.24
 Author: Thomas Hardegger
 Author URI: www.buv.ch
-License: GPL2
+License: GPL3
 
 ----------------------------------------------------------------------------------------
 Copyright 2015 Thomas Hardegger (email : webmaster@buv.ch)
@@ -38,6 +38,7 @@ V1.20 - 15.03.2018 - E-Kids Runde 2 gefixt, Index neue in Plugin BUV-GR
 V1.21 - 15.03.2018 - E-Kids Runde 2 in Admin und Default
 V1.22 - 06.03.2018 - Fehler abgefangen, wenn keine Rounden in aktueller Saison definiert PHP 7.2
 V1.23 - 05-09.2018 - Fehler abgefangen, wenn keine Gruppen in aktueller Saison definiert PHP 7.2
+V1.24 - 02-12.2018 - Anpassungen an PHP 7.2
 */
 
 // Sicherstellen, dass keine Infos ausgegeben werden wenn direkt aufgerufen
